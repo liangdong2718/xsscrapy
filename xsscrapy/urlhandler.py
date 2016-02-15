@@ -16,7 +16,7 @@ def obtain_key(url):
     new_query += key + "&"
   new_url = "http://" + parse_result.netloc + parse_result.path \
         + "?" + new_query
-  print "new_url:"+new_url
+  print "****new_url****:"+new_url
   return new_url
 
 def has_query(url):

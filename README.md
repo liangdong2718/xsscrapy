@@ -49,6 +49,9 @@ zlib
 libffi
 openssl (sometimes libssl-dev)
 
+install depend libraries command:
+apt-get install libxml2-dev libxslt1-dev python-dev
+
 Tests
 -------
 * Cookies
