@@ -7,6 +7,7 @@ from scrapy.selector import Selector
 from xsscrapy.items import inj_resp
 from xsscrapy.loginform import fill_login_form
 from urlparse import urlparse, parse_qsl, urljoin, urlunparse, urlunsplit
+from xsscrapy.urlhandler import has_query
 
 from scrapy.http.cookies import CookieJar
 from cookielib import Cookie
@@ -37,9 +38,12 @@ class XSSspider(CrawlSpider):
         # run using: scrapy crawl xss_spider -a url='http://example.com'
         super(XSSspider, self).__init__(*args, **kwargs)
         self.start_urls = [kwargs.get('url')]
-        hostname = urlparse(self.start_urls[0]).hostname
-        # With subdomains
-        self.allowed_domains = [hostname] # adding [] around the value seems to allow it to crawl subdomain of value
+        self.host_limit = [kwargs.get('hostlimit')]
+        if self.host_limit != 'False':
+          hostname = urlparse(self.start_urls[0]).hostname
+          # With subdomains
+          self.allowed_domains = [hostname] # adding [] around the value seems to allow it to crawl subdomain of value
+
         self.delim = '1zqj'
         # semi colon goes on end because sometimes it cuts stuff off like
         # gruyere or the second cookie delim
@@ -73,8 +77,8 @@ class XSSspider(CrawlSpider):
         fourohfour_req = Request(fourohfour_url, callback=self.parse_resp)
 
         reqs = self.parse_resp(response)
-        reqs.append(robot_req)
-        reqs.append(fourohfour_req)
+        #reqs.append(robot_req)
+        #reqs.append(fourohfour_req)
         return reqs
 
     #### Handle logging in if username and password are given as arguments ####
@@ -183,6 +187,8 @@ class XSSspider(CrawlSpider):
             if form_reqs:
                 reqs += form_reqs
 
+        if parsed_url.query == "":
+          return
         payloaded_urls = self.make_URLs(orig_url, parsed_url, url_params)
         if payloaded_urls:
             url_reqs = self.make_url_reqs(orig_url, payloaded_urls)
@@ -247,7 +253,7 @@ class XSSspider(CrawlSpider):
         ''' Payload each form input in each input's own request '''
         reqs = []
         vals_urls_meths = []
-        
+
         payload = self.make_payload()
 
         for form in forms:
@@ -466,7 +472,7 @@ class XSSspider(CrawlSpider):
         parsedUrl = urlparse(url)
         fullParams = parsedUrl.query
         #parse_qsl rather than parse_ps in order to preserve order
-        params = parse_qsl(fullParams, keep_blank_values=True) 
+        params = parse_qsl(fullParams, keep_blank_values=True)
         return params
 
     def change_params(self, params, payload):

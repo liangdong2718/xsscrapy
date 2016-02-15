@@ -23,6 +23,9 @@ DOWNLOADER_MIDDLEWARES = {'xsscrapy.middlewares.InjectedDupeFilter': 100,
                           'xsscrapy.middlewares.RandomUserAgentMiddleware': 200,
                           'scrapy.contrib.downloadermiddleware.httpauth.HttpAuthMiddleware': 300}
 
+SPIDER_MIDDLEWARES = {
+            'scrapy.contrib.spidermiddleware.offsite.OffsiteMiddleware': None}
+
 COOKIES_ENABLED = True
 #COOKIES_DEBUG = True
 

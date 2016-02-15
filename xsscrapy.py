@@ -15,6 +15,7 @@ def get_args():
                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-u', '--url', help="URL to scan; -u http://example.com")
     parser.add_argument('-l', '--login', help="Login name; -l danmcinerney")
+    parser.add_argument('-L', '--hostlimit', default = False,  help="only detect url in limited urls; -L True, default=false")
     parser.add_argument('-p', '--password', help="Password; -p pa$$w0rd")
     parser.add_argument('-c', '--connections', default='30', help="Set the max number of simultaneous connections allowed, default=30")
     parser.add_argument('-r', '--ratelimit', default='0', help="Rate in requests per minute, default=0")
@@ -28,9 +29,9 @@ def main():
     if rate not in [None, '0']:
         rate = str(60 / float(rate))
     try:
-        execute(['scrapy', 'crawl', 'xsscrapy', 
-                 '-a', 'url=%s' % args.url, '-a', 'user=%s' % args.login, '-a', 
-                 'pw=%s' % args.password, '-a', 'basic=%s' % args.basic, 
+        execute(['scrapy', 'crawl', 'xsscrapy',
+                 '-a', 'url=%s' % args.url, '-a', 'user=%s' % args.login, '-a',
+                 'pw=%s' % args.password, '-a', 'basic=%s' % args.basic, '-a', 'hostlimit=%s' % args.hostlimit,
                  '-s', 'CONCURRENT_REQUESTS=%s' % args.connections,
                  '-s', 'DOWNLOAD_DELAY=%s' % rate])
     except KeyboardInterrupt:

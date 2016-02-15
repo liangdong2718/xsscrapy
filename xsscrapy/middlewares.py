@@ -1,6 +1,7 @@
 from scrapy.exceptions import IgnoreRequest
 from urlparse import unquote
 from pybloom import BloomFilter
+from urlhandler import obtain_key
 import random
 import re
 
@@ -45,10 +46,11 @@ class InjectedDupeFilter(object):
             #replace the delim characters with nothing so we only test the URL
             #with the payload
             no_delim_url = url.replace(delim, '')
-            if no_delim_url in URLS_SEEN:
+            new_url = obtain_key(no_delim_url)
+            if new_url in URLS_SEEN:
                 raise IgnoreRequest
             spider.log('Sending payloaded URL: %s' % url)
-            URLS_SEEN.add(url)
+            URLS_SEEN.add(new_url)
             return
 
         # Injected form dupe handling
