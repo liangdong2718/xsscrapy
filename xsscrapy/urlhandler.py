@@ -16,7 +16,6 @@ def obtain_key(url):
     new_query += key + "&"
   new_url = "http://" + parse_result.netloc + parse_result.path \
         + "?" + new_query
-  print "****new_url****:"+new_url
   return new_url
 
 def has_query(url):
@@ -28,4 +27,6 @@ def has_query(url):
 
 if __name__ == '__main__':
   test_url = "http://www2.shengda.edu.cn/ytw/tuanxiao/link.asp?action=go&fl_id=12"
-  obtain_key(test_url)
+  new_url = obtain_key(test_url)
+  print "test_url: "+test_url
+  print "new_url: "+new_url

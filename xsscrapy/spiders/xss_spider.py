@@ -11,6 +11,7 @@ from xsscrapy.urlhandler import has_query
 
 from scrapy.http.cookies import CookieJar
 from cookielib import Cookie
+from selenium import webdriver
 
 from lxml.html import soupparser, fromstring
 import lxml.etree
@@ -19,6 +20,7 @@ import urllib
 import re
 import sys
 import cgi
+import time
 import requests
 import string
 import random
@@ -26,6 +28,7 @@ import random
 #from IPython import embed
 
 __author__ = 'Dan McInerney danhmcinerney@gmail.com'
+spider_cookies = []
 
 class XSSspider(CrawlSpider):
     name = 'xsscrapy'
@@ -37,6 +40,17 @@ class XSSspider(CrawlSpider):
     def __init__(self, *args, **kwargs):
         # run using: scrapy crawl xss_spider -a url='http://example.com'
         super(XSSspider, self).__init__(*args, **kwargs)
+        # change use_browser to use parameter
+        USE_BROWSER = False
+
+        if USE_BROWSER:
+          driver = webdriver.Firefox()
+          driver.get("http://bbs.pinggu.org")
+          time.sleep(20)
+          spider_cookies = driver.get_cookies()
+          print "cookies:"
+          print driver.get_cookies()
+
         self.start_urls = [kwargs.get('url')]
         self.host_limit = [kwargs.get('hostlimit')]
         if self.host_limit != 'False':
@@ -72,9 +86,9 @@ class XSSspider(CrawlSpider):
         u = urlparse(response.url)
         self.base_url = u.scheme+'://'+u.netloc
         robots_url = self.base_url+'/robots.txt'
-        robot_req = Request(robots_url, callback=self.robot_parser)
+        robot_req = Request(robots_url, cookies = spider_cookies, callback=self.robot_parser)
         fourohfour_url = self.start_urls[0]+'/requestXaX404'
-        fourohfour_req = Request(fourohfour_url, callback=self.parse_resp)
+        fourohfour_req = Request(fourohfour_url, cookies = spider_cookies, callback=self.parse_resp)
 
         reqs = self.parse_resp(response)
         #reqs.append(robot_req)
@@ -87,11 +101,11 @@ class XSSspider(CrawlSpider):
             otherwise pass it to the normal callback function '''
         if self.login_user and self.login_pass:
             if self.basic_auth == 'true':
-                yield Request(url=self.start_urls[0]) # Take out the callback arg so crawler falls back to the rules' callback
+                yield Request(url=self.start_urls[0], cookies = spider_cookies, ) # Take out the callback arg so crawler falls back to the rules' callback
             else:
-                yield Request(url=self.start_urls[0], callback=self.login)
+                yield Request(url=self.start_urls[0], cookies = spider_cookies, callback=self.login)
         else:
-            yield Request(url=self.start_urls[0]) # Take out the callback arg so crawler falls back to the rules' callback
+            yield Request(url=self.start_urls[0], cookies = spider_cookies) # Take out the callback arg so crawler falls back to the rules' callback
 
     def login(self, response):
         ''' Fill out the login form and return the request'''
@@ -130,7 +144,7 @@ class XSSspider(CrawlSpider):
                     continue
                 disallowed = self.base_url+address
                 disallowed_urls.add(disallowed)
-        reqs = [Request(u, callback=self.parse_resp) for u in disallowed_urls if u != self.base_url]
+        reqs = [Request(u, callback=self.parse_resp, cookies = spider_cookies) for u in disallowed_urls if u != self.base_url]
         for r in reqs:
             self.log('Added robots.txt disallowed URL to our queue: '+r.url)
         return reqs
@@ -244,7 +258,7 @@ class XSSspider(CrawlSpider):
                 url = urljoin(orig_url, i)
 
             if url:
-                iframe_reqs.append(Request(url))
+                iframe_reqs.append(Request(url, cookies = spider_cookies ))
 
         if len(iframe_reqs) > 0:
             return iframe_reqs
